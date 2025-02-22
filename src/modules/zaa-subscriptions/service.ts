@@ -43,12 +43,13 @@ class SubscriptionModuleService extends MedusaService({
           expiration_date: expirationDate,
           metadata: subscription.metadata || {}
         })
+        // console.log('createdSubscription', JSON.stringify(createdSubscription, null, 2))
 
         // If subscription items are provided, create them
         if (subscription.items && subscription.items.length > 0) {
           try {
             // First remove any existing items to avoid conflicts
-            await this.removeSubscriptionItems(createdSubscription.id)
+            // await this.removeSubscriptionItems(createdSubscription.id)
             
             const subscriptionItems = await Promise.all(
               subscription.items.map(async (item) => {
@@ -62,12 +63,11 @@ class SubscriptionModuleService extends MedusaService({
                 })
               })
             )
-            console.log('subscriptionItems', JSON.stringify(subscriptionItems, null, 2))
 
             // Attach items to the subscription
-            await this.updateSubscription(createdSubscription.id, {
-              items: subscriptionItems
-            })
+            // await this.updateSubscription(createdSubscription.id, {
+            //   items: subscriptionItems
+            // })
           } catch (error) {
             // If there's an error creating items, cancel the subscription
             await this.cancelSubscriptions(createdSubscription.id)
@@ -232,7 +232,9 @@ class SubscriptionModuleService extends MedusaService({
   }
 
   async getSubscription(id: string): Promise<SubscriptionData> {
-    return await this.retrieveSubscription(id)
+    return await this.retrieveSubscription(id, {
+      relations: ["items"]
+    })
   }
 
 }

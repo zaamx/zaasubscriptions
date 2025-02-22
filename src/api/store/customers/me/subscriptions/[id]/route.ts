@@ -72,6 +72,7 @@ import {
       .getSubscription(
         req.params.id
       )
+    console.log('subscription', JSON.stringify(subscription, null, 2))
 
     res.json({
       subscription

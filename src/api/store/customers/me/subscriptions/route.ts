@@ -17,8 +17,6 @@ import { json } from "stream/consumers";
 
     const body = req.body as CreateSubscriptionData
     const customer_id = req.auth_context?.actor_id
-    console.log('body', JSON.stringify(body, null, 2))
-    console.log('customer_id', customer_id)
 
     const { result } = await createSubscriptionWorkflow(
         req.scope

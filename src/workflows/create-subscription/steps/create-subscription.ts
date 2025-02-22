@@ -19,8 +19,6 @@ const createSubscriptionStep = createStep(
     }: StepInput, { container }) => {
       const subscriptionModuleService: SubscriptionModuleService = 
         container.resolve(SUBSCRIPTION_MODULE)
-        console.log('subscription_data', JSON.stringify(subscription_data, null, 2))
-        console.log('customer_id', customer_id)
       const linkDefs: LinkDefinition[] = []
   
       const subscription = await subscriptionModuleService.createSubscriptions({
