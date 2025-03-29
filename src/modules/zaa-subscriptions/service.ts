@@ -149,8 +149,8 @@ class SubscriptionModuleService extends MedusaService({
     const nextOrderDate = moment(last_order_date)
       .add(
         period, 
-        interval === SubscriptionInterval.MONTHLY ? 
-          "month" : "year"
+        interval === SubscriptionInterval.WEEKLY ? 
+          "week" : "month"
       )
     const expirationMomentDate = moment(expiration_date)
 
@@ -172,8 +172,8 @@ class SubscriptionModuleService extends MedusaService({
     return moment(subscription_date)
       .add(
         period,
-        interval === SubscriptionInterval.MONTHLY ?
-          "month" : "year"
+        interval === SubscriptionInterval.WEEKLY ?
+          "week" : "month"
       ).toDate()
   }
 
@@ -183,6 +183,34 @@ class SubscriptionModuleService extends MedusaService({
   ): Promise<SubscriptionData> {
     // If we're updating items, we need to handle it specially
     console.log('data', JSON.stringify(data, null, 2))
+    
+    // Get current subscription to check for interval/period changes
+    const currentSubscription = await this.getSubscription(id)
+    
+    // If interval or period is changing, recalculate dates
+    if (data.interval || data.period) {
+      const subscriptionDate = currentSubscription.subscription_date
+      const lastOrderDate = currentSubscription.last_order_date
+      
+      // Calculate new expiration date
+      const expirationDate = this.getExpirationDate({
+        subscription_date: subscriptionDate,
+        interval: data.interval || currentSubscription.interval,
+        period: data.period || currentSubscription.period
+      })
+
+      // Calculate new next order date
+      const nextOrderDate = this.getNextOrderDate({
+        last_order_date: lastOrderDate,
+        expiration_date: expirationDate,
+        interval: data.interval || currentSubscription.interval,
+        period: data.period || currentSubscription.period
+      })
+
+      // Add these to the update data
+      data.expiration_date = expirationDate
+      data.next_order_date = nextOrderDate
+    }
     
     if (data.items) {
       try {
@@ -207,12 +235,12 @@ class SubscriptionModuleService extends MedusaService({
 
         // Update the subscription with the new items
         const result = await this.updateSubscriptions({
-          selector: { id },
-          data: {
-            ...data,
-            items: subscriptionItems,
-            metadata: data.metadata || {}
-          }
+          id,
+          interval: data.interval,
+          period: data.period,
+          expiration_date: data.expiration_date,
+          next_order_date: data.next_order_date,
+          metadata: data.metadata || currentSubscription.metadata
         })
         console.log('result', JSON.stringify(result, null, 2))
         return result[0]
@@ -229,12 +257,14 @@ class SubscriptionModuleService extends MedusaService({
 
     // For non-items updates, proceed as normal
     const result = await this.updateSubscriptions({
-      selector: { id },
-      data: {
-        ...data,
-        metadata: data.metadata || {}
-      }
+      id,
+      interval: data.interval,
+      period: data.period,
+      expiration_date: data.expiration_date,
+      next_order_date: data.next_order_date,
+      metadata: data.metadata || currentSubscription.metadata
     })
+    console.log('result', JSON.stringify(result, null, 2))
     return result[0]
   }
 

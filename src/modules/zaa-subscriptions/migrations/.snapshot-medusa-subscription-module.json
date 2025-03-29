@@ -39,6 +39,7 @@
           "primary": false,
           "nullable": false,
           "enumItems": [
+            "weekly",
             "monthly",
             "yearly"
           ],

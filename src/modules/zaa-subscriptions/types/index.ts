@@ -9,6 +9,7 @@ export enum SubscriptionStatus {
 }
 
 export enum SubscriptionInterval {
+  WEEKLY = "weekly",
   MONTHLY = "monthly",
   YEARLY = "yearly"
 }
