@@ -72,7 +72,7 @@ import {
       .getSubscription(
         req.params.id
       )
-    console.log('subscription', JSON.stringify(subscription, null, 2))
+    // console.log('subscription', JSON.stringify(subscription, null, 2))
 
     res.json({
       subscription
@@ -85,7 +85,7 @@ import {
   ) => {
     const subscriptionModuleService: SubscriptionModuleService =
       req.scope.resolve(SUBSCRIPTION_MODULE)
-
+    console.log('initial body', JSON.stringify(req.body, null, 2))
     const subscription = await subscriptionModuleService
       .updateSubscription(
         req.params.id,

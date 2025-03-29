@@ -63,11 +63,19 @@ Join our [Discord server](https://discord.com/invite/medusajs) to meet other com
 - [LinkedIn](https://www.linkedin.com/company/medusajs)
 - [Medusa Blog](https://medusajs.com/blog/)
 
-Plugin Development
-npx medusa plugin:develop
 
-Plugin DB generation
+1. Publicar a store local
+npx medusa plugin:publish
+
+2. Generar migraciones si hay modelos
 npx medusa plugin:db:generate
 
-On Medusa Main Project
+3. Encender dev server del plugin
+npx medusa plugin:develop
+
+4. On Medusa Main Project
 npx medusa db:migrate
+
+5. Para publicar cambiar numero de version
+npx medusa plugin:build 
+npm publish --access public

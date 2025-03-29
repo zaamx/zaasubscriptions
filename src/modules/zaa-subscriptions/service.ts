@@ -181,6 +181,53 @@ class SubscriptionModuleService extends MedusaService({
     id: string,
     data: Partial<SubscriptionData>
   ): Promise<SubscriptionData> {
+    // If we're updating items, we need to handle it specially
+    console.log('data', JSON.stringify(data, null, 2))
+    
+    if (data.items) {
+      try {
+        // First remove existing items
+        await this.removeSubscriptionItems(id)
+        console.log('removed items')
+        
+        // Then create new items
+        const subscriptionItems = await Promise.all(
+          data.items.map(async (item) => {
+            return await this.createSubscriptionItem({
+              subscription: id,
+              variant_id: item.variant_id,
+              title: item.title,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              metadata: item.metadata || {}
+            })
+          })
+        )
+        console.log('subscriptionItems', JSON.stringify(subscriptionItems, null, 2))
+
+        // Update the subscription with the new items
+        const result = await this.updateSubscriptions({
+          selector: { id },
+          data: {
+            ...data,
+            items: subscriptionItems,
+            metadata: data.metadata || {}
+          }
+        })
+        console.log('result', JSON.stringify(result, null, 2))
+        return result[0]
+      } catch (error) {
+        // If we get an error about item already existing, it might be because
+        // the item was actually created successfully but the update failed
+        // In this case, we can try to retrieve the subscription
+        if (error.message?.includes('already exists')) {
+          return await this.getSubscription(id)
+        }
+        throw error
+      }
+    }
+
+    // For non-items updates, proceed as normal
     const result = await this.updateSubscriptions({
       selector: { id },
       data: {
@@ -221,13 +268,17 @@ class SubscriptionModuleService extends MedusaService({
   async removeSubscriptionItems(
     subscriptionId: string
   ): Promise<void> {
+    console.log('removing items')
     await super.deleteSubscriptionItems({
       subscription: subscriptionId
     })
     
-    // Update subscription to reflect empty items
-    await this.updateSubscription(subscriptionId, {
-      items: []
+    // Update subscription to reflect empty items directly using updateSubscriptions
+    await this.updateSubscriptions({
+      selector: { id: subscriptionId },
+      data: {
+        items: []
+      }
     })
   }
 

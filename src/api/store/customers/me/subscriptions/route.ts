@@ -46,7 +46,7 @@ export const GET = async (
       id: [customer_id],
     },
   })
-  console.log('customer', JSON.stringify(customer, null, 2))
+  // console.log('customer', JSON.stringify(customer, null, 2))
 
   res.json(customer)
 }
